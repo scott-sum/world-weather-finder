@@ -21,7 +21,7 @@ db = SQLAlchemy(app)
 # A city is made up an id and a name
 class City(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=False) # nullable means it cannot be an empty field
 
 # goes to the openweathermap api, gets the data, and returns it in json format
 def get_weather_data(city):
@@ -33,15 +33,16 @@ def get_weather_data(city):
 @app.route('/')
 def index_get():
     
-    cities = City.query.all()
+    cities = City.query.all() # get all cities
     
     weather_data = []
 
     for city in cities:        
+        # getting the city weather information which is currently in json
         r = get_weather_data(city.name)
         print(r)
 
-        # getting the city weather information
+        # create weather object to append to array
         weather = {
             'city' : city.name,
             'temperature' : r['main']['temp'],
@@ -52,7 +53,7 @@ def index_get():
         # append it to the array to post
         weather_data.append(weather)
 
-
+    #second parameter passes to html file
     return render_template('weather.html', weather_data=weather_data)
 
 
@@ -60,12 +61,13 @@ def index_get():
 def index_post():
     err_msg = ''
     new_city = request.form.get('city') # getting the city from the form
-    if new_city:
-        existing_city = City.query.filter_by(name=new_city).first()
-        # checks for duplicate cities
+    if new_city: # checks if city is entered in form
+        existing_city = City.query.filter_by(name=new_city).first() #checks if new city already exists in database
+       
         if not existing_city:
             new_city_data = get_weather_data(new_city)
-            # 200 means that everything is OK
+            
+            # cod comes from json object and 200 means it is successful
             if new_city_data['cod'] == 200:
                 new_city_obj = City(name=new_city)
 
